@@ -39,7 +39,7 @@ ws3_dem <- mask(ws3_dem, ws3)
 writeRaster(ws3_dem, filename = 'rasters/dem1m_ws3.tif', overwrite = TRUE)
 
 
-# Create temp dir for intermediate steps (to save on data storage)
+# Create temp dir for intermediate steps (to save on data storage)x
 dir_temp <- tempdir()
 
 
