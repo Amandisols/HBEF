@@ -1,0 +1,138 @@
+---
+title: "03-events"
+author: "Amanda Pennino"
+date: "2024-05-02"
+output: html_document
+---
+
+
+#Input
+# * Rain Gauge precipitation (15 min)
+
+#Output
+# * Delineated storm events
+
+
+Notes:
+"From 2012 to 2015, eight typhoons were sampled and the basic information
+was collected, including the total precipitation amount (P), duration (D), average intensity of rainfall
+(RIavg), maximum 3-h rainfall amount (Pmax3h), total runoff (Q), peak flow (Qmax), runoff ratio (Q/P),
+and the antecedent 7-day rainfall (AP7day). In the literature, these are considered to be factors affecting
+event water transit time and event water fraction [23–25]"
+  Hrachowitz, M.; Soulsby, C.; Tetzlaff, D.; Malcolm, I.A.; Schoups, G. Gamma distribution models for transit
+  time estimation in catchments: Physical interpretation of parameters and implications for time-variant transit
+  time assessment. Water Resour. Res. 2010, 46, W10536. [CrossRef]
+  24. Klaus, J.; McDonnell, J.J. Hydrograph separation using stable isotopes: Review and evaluation. J. Hydrol.
+  2013, 505, 47–64. [CrossRef]
+  25. Segura, C.; James, A.L.; Lazzati, D.; Roulet, N.T. Scaling relationships for event water contributions and
+  transit times in small-forested catchments in Eastern Quebec. Water Resour. Res. 2012, 48, W07502. [CrossRef]
+
+```{r}
+library(tidyverse)
+library(lubridate)
+
+```
+
+
+
+#DOWNLOAD THE LATEST PRECIP DATASET
+- Data set title: Hubbard Brook Experimental Forest: 15-minute Precipitation Measurements, 2011 - present.
+- Grab code and run in console: https://portal.edirepository.org/nis/codeGeneration?packageId=knb-lter-hbr.277.8&statisticalFileType=r
+- Last downloaded from edi: 05/10/2024
+- Data is in millimeters
+- Gauge spelled as "gage"
+
+#######CHANGE THE OUTPUT FILE TO output_precip
+
+```{r}
+
+datesRG <- read_csv("~/projects/DSS/HBEF/HBEF_repo/rg_dates.csv")
+
+#Rain Gauge 19 (June-August 2011)
+rg19 <- read_csv("timeseries/edi_precip/RG19.csv")
+
+#Rain Gauge 1 (August 2011-2016)
+rg1 <- read_csv("timeseries/edi_precip/RG1.csv")
+first_1 <- head(rg1$DateTime, n = 1)
+  
+#Rain Gauge 4 (August 2016-2020)
+rg4 <- read_csv("timeseries/edi_precip/RG4.csv")
+first_4 <- head(rg4$DateTime, n = 1)
+
+
+#Refine and combine
+rg19 <- rg19 %>%
+  filter(DateTime < first_1)
+
+rg1 <- rg1 %>%
+  filter(DateTime < first_4)
+
+precip <- bind_rows(rg19, rg1, rg4)
+
+#write.csv(precip, "timeseries/precipWS3_15min.csv")
+
+#aggregate to 1-hour data
+
+
+p <- precip %>% 
+  select(DateTime, precip)
+
+
+p <- p %>% 
+  mutate(DateTime = floor_date(DateTime, unit = "hour")) %>% 
+  group_by(DateTime) %>% 
+  summarise(precip = sum(precip))
+
+#write.csv(p, "timeseries/precipWS3_1hr.csv")
+
+
+```
+
+
+
+# ID EVENTS
+- Functions named in hydrun_fxns.R
+- Notes on settings parameters: Minimum Interevent Time, runoff producing threshold (e.g., inches)
+
+
+Minimum Inter-event Time Determination (IETD)
+```{r}
+
+p <- read_csv("timeseries/precipWS3_1hr.csv")
+p <- p %>% select(DateTime, precip)
+
+
+results_CVA <- CVA(Time_series = p, 
+               Time_Step = 1,
+               MaxIETD = 24)
+
+IETD_CVA<-results_CVA$EITD
+results_CVA$Figure
+
+
+
+results_AutoA <- AutoA(Time_series = p,
+                       Time_Step = 1)
+
+results_AutoA$Figure
+#where it comes to 0
+IETD_AutoA = 14
+
+
+```
+
+
+Runoff producing rainfall events
+```{r}
+CN = 83.7
+Pt_mm = (25400/CN)-254 #equation from Chin
+Pt_inches = Pt_mm/25.4
+
+
+```
+
+
+
+
+
+
