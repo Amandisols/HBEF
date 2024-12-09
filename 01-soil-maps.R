@@ -34,7 +34,7 @@ ws3 <- ws[ws$WS == "WS3", ]
 ws3_50 <- buffer(ws3, 50)
 
 plot(ws3)
-plot(ws3_100)
+plot(ws3_50)
 
 #1- Bh
 #2- Bhs
@@ -45,7 +45,8 @@ plot(ws3_100)
 #7- O
 #8- Typical
 
-soils <- rast("rasters/knb-lter-hbr.380.2/modelout2024-02-21.tif")
+# Navigate to wherever the model is stores
+soils <- rast("~/projects/DSS/HBEF/data/GIS/hpu_map2024/modelout2024-02-21.tif")
 
 plot(soils)
 

@@ -36,8 +36,11 @@ ws3_dem <- crop(hb_dem, ws3)
 ws3_dem <- mask(ws3_dem, ws3)
 
 #plot(ws3_dem)
-
 writeRaster(ws3_dem, filename = 'rasters/dem1m_ws3.tif', overwrite = TRUE)
+
+
+# Create temp dir for intermediate steps (to save on data storage)
+dir_temp <- tempdir()
 
 
 wbt_fill_depressions_wang_and_liu(
