@@ -70,6 +70,12 @@ dem_hydro <- rast("rasters/dem5m_ws3_hydro.tif")
 # Flow accumulation rasters 
 ## d8-flow accumulation
 wbt_d8_flow_accumulation(
+  input = "rasters/dem1m_ws3_hydro.tif",
+  output = paste0(dir_temp, "1m_d8.tif"),
+  out_type = "cells"
+)
+
+wbt_d8_flow_accumulation(
   input = "rasters/dem5m_ws3_hydro.tif",
   output = paste0(dir_temp, "5m_d8.tif"),
   out_type = "cells"
@@ -88,40 +94,16 @@ wbt_md_inf_flow_accumulation(
 flowgrid <- rast(paste0(dir_temp, "1m_d8.tif"))
 flowgrid[flowgrid < 5e2] <- NA
 flowgrid <- flowgrid*0+1 # Set all NAs = 0, all streams = 1
-flownet <- rasterToPolygons(flowgrid, dissolve = TRUE)
+#flownet <- rasterToPolygons(flowgrid, dissolve = TRUE)
+flownet <- as.polygons(flowgrid, aggregate=TRUE)
 flownet1m <- st_as_sf(flownet)
 
-plot(flowgrid)
-
-flowgrid <- rast(paste0(dir_temp, "5m_d8.tif"))
-flowgrid[flowgrid < 5e2] <- NA
-flowgrid <- flowgrid*0+1 # Set all NAs = 0, all streams = 1
-flownet <- raster::rasterToPolygons(flowgrid, dissolve = TRUE)
-flownet5m <- st_as_sf(flownet)
-
-
-??rasterToPolygons
-
-
 plot(flownet1m)
-plot(flownet5m)
 
 
+^^^^^^^^^
+#plot this over a DEM with well points to make sure the lines are matching up.
 
-writeRaster(flowgrid, filename = "rasters/flowgrid_5e2_dem1m.tif", overwrite = TRUE)
-st_write(flownet, "vectors/flownet_5e2_dem1m.shp")
-
-
-# Create a flow network using multiple (where a stream would likely be)
-## For 1m DEM use flowgrid <5e3, for 3m use <90
-flowgrid <- raster("rasters/ws3_d8.tif")
-flowgrid[flowgrid < 5e2] <- NA
-flowgrid <- flowgrid*0+1 # Set all NAs = 0, all streams = 1
-flownet <- rasterToPolygons(flowgrid, dissolve = TRUE)
-flownet <- st_as_sf(flownet)
-
-plot(flownet)
-
-writeRaster(flowgrid, filename = "rasters/flowgrid_5e2_dem1m.tif", overwrite = TRUE)
-st_write(flownet, "vectors/flownet_5e2_dem1m.shp")
+#writeRaster(flowgrid, filename = "rasters/flowgrid_5e2_dem1m.tif", overwrite = TRUE)
+#st_write(flownet, "vectors/flownet_5e2_dem1m.shp")
 
