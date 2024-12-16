@@ -101,7 +101,7 @@ flownet1m <- st_as_sf(flownet)
 plot(flownet1m)
 
 
-^^^^^^^^^
+#^^^^^^^^^
 #plot this over a DEM with well points to make sure the lines are matching up.
 
 #writeRaster(flowgrid, filename = "rasters/flowgrid_5e2_dem1m.tif", overwrite = TRUE)
